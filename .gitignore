@@ -12,6 +12,7 @@ __pycache__\
 /tmp
 /model.ckpt
 /models/**/*
+/model_zoo
 /GFPGANv1.3.pth
 /gfpgan/weights/*.pth
 /ui-config.json
