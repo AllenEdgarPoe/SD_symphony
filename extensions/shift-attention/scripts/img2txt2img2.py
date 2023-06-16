@@ -25,6 +25,11 @@ from modules.shared import opts, cmd_opts, state, sd_upscalers
 from modules.images import resize_image
 import modules.shared as shared
 
+from modules.test_swinIR import run_swinIR
+from modules.main_test_bsrgan import run_bsr
+from modules.inference_realesrgan import run_esr
+from modules.crawl import crawl
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from rife.RIFE_HDv3 import Model
 
@@ -34,7 +39,7 @@ DEFAULT_UPSCALE_METH = __('Upscaler', 'R-ESRGAN 4x+')
 DEFAULT_UPSCALE_RATIO = __('Upscale ratio', 1.0)
 CHOICES_UPSCALER = [x.name for x in sd_upscalers]
 
-
+a,b,c,d = crawl()
 def curve_steps(curve, curvestr, steps):
     strengths = []
     for i in range(steps+1):
@@ -123,12 +128,12 @@ class Script(scripts.Script):
             rife_drop = gr.Checkbox(label='Drop original frames', value=False, visible=False)
 
         with gr.Row():
-            txt1 = gr.Textbox(value="Experts in South Korea have raised concerns that the environmental impact of the contaminated water release from Japan's Fukushima nuclear plant has not been properly assessed, with no investigation into the impact of radioactive substances on marine life or biological concentration considered",lines=3)
-            txt2 = gr.Textbox(value="Record-breaking heatwave grips the regio, with temperatures soaring well above normal, leading to health concerns and increased strain on energy resources", lines=3)
-            txt3 = gr.Textbox(value="An international team of astronomers, including researchers from the Korea Astronomy and Space Science Institute, has observed for the first time the accretion disk and powerful jet of the supermassive black hole at the center of the galaxy M87", lines=3)
-            txt4 = gr.Textbox(value="Wildfires continue to ravage vast areas, fueled by prolonged drought conditions, strong winds, and high temperatures, resulting in the evacuation of residents and significant damage to ecosystems", lines=3)
+            txt1 = gr.Textbox(value=list(a), lines=3)
+            txt2 = gr.Textbox(value=list(b), lines=3)
+            txt3 = gr.Textbox(value=list(c), lines=3)
+            txt4 = gr.Textbox(value=list(d), lines=3)
             txt5 = gr.Textbox(value="", lines=3)
-            txt6 = gr.Textbox(value="Severe thunderstorms sweep across the area, accompanied by large hail, damaging winds, and frequent lightning, resulting in power outages and property damage", lines=3)
+            txt6 = gr.Textbox(value="", lines=3)
             txt7 = gr.Textbox(value="", lines=3)
             txt8 = gr.Textbox(value="", lines=3)
             txt9 = gr.Textbox(value="", lines=3)
@@ -200,10 +205,10 @@ class Script(scripts.Script):
     #     return prompts
 
     def get_prompt_from_texts(self, texts, add_prompt):
-        if add_prompt:
-            texts = [self.prompt_generator(txt) for txt in texts if txt]
-        else:
-            texts = [txt for txt in texts if txt]
+        # if add_prompt:
+        #     texts = [self.prompt_generator(txt) for txt in texts if txt]
+        # else:
+        texts = [txt for txt in texts if txt]
 
         for idx, text in enumerate(texts):
             if text:
@@ -521,8 +526,11 @@ class Script(scripts.Script):
         if upscale_meth != 'None' and upscale_ratio != 1.0 and upscale_ratio != 0.0:
             for idx, ori in enumerate(images):
                 print(f"{idx}th image up-scaling")
-                image = resize_image(0, ori, tgt_w, tgt_h, upscaler_name=upscale_meth)
-                images[idx] = image
+                # image = resize_image(0, ori, tgt_w, tgt_h, upscaler_name=upscale_meth)
+                images[idx] = run_bsr(ori)
+            for idx, img in enumerate(images):
+                im = Image.fromarray(img)
+                im.save(os.path.join(p.outpath_samples, str(idx) + '.png'))
 
 
         if save_video:
